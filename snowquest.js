@@ -4,27 +4,42 @@ function App() {
 
     const [weather, setWeather] = useState([]);
     const [borders, setBorders] = useState([]);
+    const [found, setFound] = useState(false);
+    // const [ip, setIp] = useState([]);
+    // const [location, setLocation] = useState([]);
 
 
     const find = () => {
-        fetch("https://api.openweathermap.org/data/2.5/weather?lat=24.7&lon=46.6&appid=")
+        fetch("http://api.weatherunlocked.com/api/forecast/39.23,40.71?app_id=")
         .then(response => response.json())
         .then(data => {
             console.log(data);
             setWeather(data);
+            setFound(true)
         })
         .catch((err) => {
             console.log(err.message);
          });
     }
 
-    const findBorders = (country) => {
+    const findBorders = async () => {
+        let country_code
+        await fetch("https://ipgeolocation.abstractapi.com/v1/?api_key=")
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.city)
+            country_code = data.country_code
+        })
+        .catch((err) => {
+            console.log(err.message);
+        });
+        
         fetch("gdsCountryBorders.json")
         .then(response => response.json())
         .then(data => {
             const countryBorders = [...borders]
             data.forEach(border => {
-                if (border.country_code==country) {
+                if (border.country_code==country_code) {
                     countryBorders.push(border.country_border_name)
                 }
             });
@@ -36,25 +51,52 @@ function App() {
          });
     }
 
+    // const findIP = async () => {
+    //     let country_code = ""
+    //     await fetch("https://ipgeolocation.abstractapi.com/v1/?api_key=")
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         console.log(data)
+    //         country_code = data.country_code
+    //         // setIp(data.ip_address)
+    //     })
+    //     .catch((err) => {
+    //         console.log(err.message);
+    //     });
+    //     console.log(country_code)
+    //     return country_code
+    // }
+
+    const findLocation = () => {
+        navigator.geolocation.getCurrentPosition(position => {
+            const { latitude, longitude } = position.coords;
+            // console.log(latitude, longitude)
+            // setLocation([latitude, longitude])
+        });
+        return [latitude, longitude]
+    }
+
     return (
         <div>
             <button id="find" className="btn btn-dark" onClick={() =>{find()}}>FIND</button>
-            {weather.map(post => (
-                <div key={post.date}>
-                    <p>{post.temp_min_c}</p>
-                    <p>{post.snow_total_mm}</p>
-                    <p>{post.Timeframes[0].temp_c}</p>
-                    <hr></hr>
-                </div>
-            ))}
-            <button id="borders" className="btn btn-dark" onClick={() =>{findBorders("SA")}}>BORDERS</button>
+            <p></p>
+            <div>
+                {found && <p>{weather.weather[0].main}</p>}
+                {/* <p>{weather.weather[0].main}</p> */}
+                <hr></hr>
+            </div>
+            {/* <button id="borders" className="btn btn-dark" onClick={() =>{findBorders()}}>BORDERS</button>
+            <p></p>
             {borders.map((border,i) => (
                 <div key={i}>
-                {console.log(border)}
                     <p>{border}</p>
                     <hr></hr>
                 </div>
-            ))}
+            ))} */}
+            {/* <button id="ip" className="btn btn-dark" onClick={() =>{findIP()}}>GET MY IP</button>
+            <p>{ip}</p>
+            <button id="location" className="btn btn-dark" onClick={() =>{findLocation()}}>GET MY LOCATION</button>
+            <p>{location[0]} {location[1]}</p> */}
         </div>
     );
 }
